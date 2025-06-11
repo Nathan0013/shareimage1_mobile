@@ -15,6 +15,7 @@ import android.util.DisplayMetrics;
 public class MemeCreator {
     private String texto;
     private int corTexto;
+    private float tamanhoTexto;
     private Bitmap fundo;
     private DisplayMetrics displayMetrics;
     private Bitmap meme;
@@ -25,6 +26,7 @@ public class MemeCreator {
         this.corTexto = corTexto;
         this.fundo = fundo;
         this.displayMetrics = displayMetrics;
+        this.tamanhoTexto = 64f;
         this.meme = criarImagem();
         this.dirty = false;
     }
@@ -44,6 +46,17 @@ public class MemeCreator {
 
     public void setCorTexto(int corTexto) {
         this.corTexto = corTexto;
+        dirty = true;
+    }
+
+    // Questão 1: Criei métodos para pegar e definir o tamanho do texto.
+    // Isso é necessário para que a MainActivity possa controlar essa propriedade.
+    public float getTamanhoTexto() {
+        return this.tamanhoTexto;
+    }
+
+    public void setTamanhoTexto(float tamanhoTexto) {
+        this.tamanhoTexto = tamanhoTexto;
         dirty = true;
     }
 
@@ -89,7 +102,8 @@ public class MemeCreator {
 
         paint.setColor(corTexto);
         paint.setAntiAlias(true);
-        paint.setTextSize(64.f);
+        // Questão 1: Usei a variável 'tamanhoTexto' aqui para tamanho dinâmico.
+        paint.setTextSize(this.tamanhoTexto);
         paint.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
         paint.setTextAlign(Paint.Align.CENTER);
         // desenhar texto em cima

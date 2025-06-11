@@ -22,9 +22,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
-import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly;
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.exifinterface.media.ExifInterface;
@@ -41,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView imageView;
     private MemeCreator memeCreator;
-    private final ActivityResultLauncher<Intent> startNovoTexto = registerForActivityResult(new StartActivityForResult(),
+    private final ActivityResultLauncher<Intent> startNovoTexto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
@@ -50,19 +47,25 @@ public class MainActivity extends AppCompatActivity {
                         if (intent != null) {
                             String novoTexto = intent.getStringExtra(NovoTextoActivity.EXTRA_NOVO_TEXTO);
                             String novaCor = intent.getStringExtra(NovoTextoActivity.EXTRA_NOVA_COR);
+                            // Questão 1: novo tamanho da fonte da tela de edição.
+                            float novoTamanho = intent.getFloatExtra(NovoTextoActivity.EXTRA_NOVO_TAMANHO, 64f);
+
                             if (novaCor == null) {
                                 Toast.makeText(MainActivity.this, "Cor desconhecida. Usando preto no lugar.", Toast.LENGTH_SHORT).show();
                                 novaCor = "BLACK";
                             }
                             memeCreator.setTexto(novoTexto);
                             memeCreator.setCorTexto(Color.parseColor(novaCor.toUpperCase()));
+                            // Questão 1: Aplico o novo tamanho no criador de meme.
+                            memeCreator.setTamanhoTexto(novoTamanho);
+
                             mostrarImagem();
                         }
                     }
                 }
             });
 
-    private final ActivityResultLauncher<PickVisualMediaRequest> startImagemFundo = registerForActivityResult(new PickVisualMedia(),
+    private final ActivityResultLauncher<PickVisualMediaRequest> startImagemFundo = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             new ActivityResultCallback<Uri>() {
                 @Override
                 public void onActivityResult(Uri result) {
@@ -117,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NovoTextoActivity.class);
         intent.putExtra(NovoTextoActivity.EXTRA_TEXTO_ATUAL, memeCreator.getTexto());
         intent.putExtra(NovoTextoActivity.EXTRA_COR_ATUAL, converterCor(memeCreator.getCorTexto()));
+        // Questão 1: Envio o tamanho da fonte atual para a tela de edição
+        intent.putExtra(NovoTextoActivity.EXTRA_TAMANHO_ATUAL, memeCreator.getTamanhoTexto());
 
         startNovoTexto.launch(intent);
     }
@@ -135,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void iniciarMudarFundo(View v) {
         startImagemFundo.launch(new PickVisualMediaRequest.Builder()
-                .setMediaType(ImageOnly.INSTANCE)
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                 .build());
     }
 
@@ -177,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         try (
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(imageUri, "w");
                 FileOutputStream fos = new FileOutputStream(pfd.getFileDescriptor())
-            ) {
+        ) {
             BufferedOutputStream bytes = new BufferedOutputStream(fos);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
         } catch (IOException e) {
