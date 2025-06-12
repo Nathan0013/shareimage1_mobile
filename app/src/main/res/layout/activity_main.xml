@@ -47,18 +47,32 @@
             android:layout_gravity="center_horizontal">
 
             <Button
+                android:id="@+id/buttonMudarTextoSuperior"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:contentDescription="Mudar texto superior"
+                android:onClick="iniciarMudarTextoSuperior"
+                app:icon="@drawable/baseline_vertical_align_top_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/button"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
                 android:id="@+id/button"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="9dp"
+                android:layout_marginStart="8dp"
                 android:contentDescription="@string/mudar_texto"
                 android:onClick="iniciarMudarTexto"
-                app:icon="@drawable/baseline_edit_note_24"
-                app:layout_constraintBaseline_toBaselineOf="@+id/button2"
-                app:layout_constraintEnd_toStartOf="@+id/button2"
-                app:layout_constraintHorizontal_chainStyle="spread"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:icon="@drawable/baseline_vertical_align_bottom_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/buttonMudarTextoSuperior"
+                app:layout_constraintEnd_toStartOf="@+id/button2"/>
+
 
             <Button
                 android:id="@+id/button2"

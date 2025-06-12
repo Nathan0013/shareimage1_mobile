@@ -27,6 +27,7 @@
         app:layout_constraintStart_toStartOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
+
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
@@ -47,8 +48,8 @@
         app:layout_constraintStart_toStartOf="@+id/textView3"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
-    <!-- Questão 1: Adicionei um campo para o usuário digitar o tamanho da fonte,
-         porque dá mais controle do que um botão de incrementar. -->
+    <!-- Questão 1: um campo para o usuário digitar o tamanho da fonte,
+         porque dá mais controle do que um botão de incrementar, que é o que eu tinha tentado antes -->
     <TextView
         android:id="@+id/textViewTamanho"
         android:layout_width="wrap_content"

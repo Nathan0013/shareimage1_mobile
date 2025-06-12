@@ -2,6 +2,7 @@ package br.ifmg.edu.bsi.progmovel.shareimage1;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -16,6 +17,12 @@ public class MemeCreator {
     private String texto;
     private int corTexto;
     private float tamanhoTexto;
+
+    // Questão 2: Adicionei campos para o texto de cima.
+    private String textoSuperior;
+    private int corTextoSuperior;
+    private float tamanhoTextoSuperior;
+
     private Bitmap fundo;
     private DisplayMetrics displayMetrics;
     private Bitmap meme;
@@ -27,6 +34,12 @@ public class MemeCreator {
         this.fundo = fundo;
         this.displayMetrics = displayMetrics;
         this.tamanhoTexto = 64f;
+
+        // Questão 2: Iniciei as variáveis do texto de cima.
+        this.textoSuperior = "";
+        this.corTextoSuperior = Color.WHITE;
+        this.tamanhoTextoSuperior = 64f;
+
         this.meme = criarImagem();
         this.dirty = false;
     }
@@ -59,6 +72,15 @@ public class MemeCreator {
         this.tamanhoTexto = tamanhoTexto;
         dirty = true;
     }
+
+    // Questão 2: Criei métodos para pegar e definir as propriedades do texto de cima.
+    public String getTextoSuperior() { return textoSuperior; }
+    public void setTextoSuperior(String texto) { this.textoSuperior = texto; dirty = true; }
+    public int getCorTextoSuperior() { return corTextoSuperior; }
+    public void setCorTextoSuperior(int corTexto) { this.corTextoSuperior = corTexto; dirty = true; }
+    public float getTamanhoTextoSuperior() { return this.tamanhoTextoSuperior; }
+    public void setTamanhoTextoSuperior(float tamanhoTexto) { this.tamanhoTextoSuperior = tamanhoTexto; dirty = true; }
+
 
     public Bitmap getFundo() {
         return fundo;
@@ -100,16 +122,21 @@ public class MemeCreator {
         Bitmap scaledFundo = Bitmap.createScaledBitmap(fundo, width, height, true);
         canvas.drawBitmap(scaledFundo, 0, 0, new Paint());
 
-        paint.setColor(corTexto);
         paint.setAntiAlias(true);
-        // Questão 1: Usei a variável 'tamanhoTexto' aqui para tamanho dinâmico.
-        paint.setTextSize(this.tamanhoTexto);
         paint.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
         paint.setTextAlign(Paint.Align.CENTER);
-        // desenhar texto em cima
-        //canvas.drawText(texto, (width / 2.f), (height * 0.15f), paint);
+
+        // Questão 2: Adicionei o desenho do texto de cima.
+        if (textoSuperior != null && !textoSuperior.isEmpty()) {
+            paint.setColor(corTextoSuperior);
+            paint.setTextSize(this.tamanhoTextoSuperior);
+            canvas.drawText(textoSuperior, (width / 2.f), (height * 0.15f), paint);
+        }
 
         // desenhar texto embaixo
+        paint.setColor(corTexto);
+        // Questão 1: Usei a variável 'tamanhoTexto' aqui para tamanho dinâmico.
+        paint.setTextSize(this.tamanhoTexto);
         canvas.drawText(texto, (width / 2.f), (height * 0.9f), paint);
         return bitmap;
     }

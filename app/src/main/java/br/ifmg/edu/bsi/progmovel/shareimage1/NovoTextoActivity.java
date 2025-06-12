@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class NovoTextoActivity extends AppCompatActivity {
@@ -20,9 +21,15 @@ public class NovoTextoActivity extends AppCompatActivity {
     // Questão 1: Criei uma chave para enviar o novo tamanho de volta à MainActivity.
     public static String EXTRA_NOVO_TAMANHO = "br.ifmg.edu.bsi.progmovel.shareimage1.novo_tamanho";
 
+    // Questão 2: Criei constantes para saber qual texto estou editando.
+    public static String EXTRA_ALVO_EDICAO = "br.ifmg.edu.bsi.progmovel.shareimage1.alvo_edicao";
+    public static final int ALVO_SUPERIOR = 1;
+    public static final int ALVO_INFERIOR = 2;
+
     private EditText etTexto;
     private EditText etCor;
     private EditText etTamanhoFonte;
+    private int alvoEdicao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +39,18 @@ public class NovoTextoActivity extends AppCompatActivity {
         etTexto = findViewById(R.id.etTexto);
         etCor = findViewById(R.id.etCor);
         etTamanhoFonte = findViewById(R.id.etTamanhoFonte);
+        TextView tvTitulo = findViewById(R.id.textView2);
 
         Intent intent = getIntent();
+
+        // Questão 2: Verifico qual texto editar e mudo o título da tela para o usuário saber.
+        alvoEdicao = intent.getIntExtra(EXTRA_ALVO_EDICAO, ALVO_INFERIOR);
+        if (alvoEdicao == ALVO_SUPERIOR) {
+            tvTitulo.setText("Texto Superior");
+        } else {
+            tvTitulo.setText("Texto Inferior");
+        }
+
         String textoAtual = intent.getStringExtra(EXTRA_TEXTO_ATUAL);
         String corAtual = intent.getStringExtra(EXTRA_COR_ATUAL);
         // Questão 1: Recebo o tamanho atual da fonte para que o campo já comece com o valor certo.
@@ -65,6 +82,8 @@ public class NovoTextoActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_NOVA_COR, novaCor);
         // Questão 1: Envio o novo tamanho de volta para a MainActivity.
         intent.putExtra(EXTRA_NOVO_TAMANHO, novoTamanho);
+        // Questão 2: Devolvo para a MainActivity qual texto foi editado.
+        intent.putExtra(EXTRA_ALVO_EDICAO, alvoEdicao);
 
         setResult(RESULT_OK, intent);
         finish();
