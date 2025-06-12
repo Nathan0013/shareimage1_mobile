@@ -1,6 +1,7 @@
 package br.ifmg.edu.bsi.progmovel.shareimage1;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -14,11 +15,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -31,9 +32,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-    // ... (código existente, como imageView, memeCreator e os launchers, não muda)
+
     private ImageView imageView;
     private MemeCreator memeCreator;
+
+    // Questão 4: Variáveis para controlar o modo de reposicionamento.
+    private static final int MODO_NORMAL = 0;
+    private static final int MODO_REPOSICIONAR_SUPERIOR = 1;
+    private static final int MODO_REPOSICIONAR_INFERIOR = 2;
+    private int modoAtual = MODO_NORMAL;
+
     private final ActivityResultLauncher<Intent> startNovoTexto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -64,9 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<PickVisualMediaRequest> startImagemFundo = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             result -> {
-                if (result == null) {
-                    return;
-                }
+                if (result == null) { return; }
                 try (ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(result, "r")) {
                     Bitmap imagemFundo = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), result);
                     memeCreator.setFundo(imagemFundo);
@@ -83,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    private ActivityResultLauncher<String> startWriteStoragePermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+    private final ActivityResultLauncher<String> startWriteStoragePermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
             result -> {
                 if (!result) {
                     Toast.makeText(MainActivity.this, "Sem permissão de acesso a armazenamento do celular.", Toast.LENGTH_SHORT).show();
@@ -92,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +107,47 @@ public class MainActivity extends AppCompatActivity {
         Bitmap imagemFundo = BitmapFactory.decodeResource(getResources(), R.drawable.fry_meme);
         memeCreator = new MemeCreator("Olá Android!", Color.WHITE, imagemFundo, getResources().getDisplayMetrics());
         mostrarImagem();
+
+        // Questão 4: Configurando o toque na imagem e o clique longo nos botões.
+        configurarListenersDePosicao();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void configurarListenersDePosicao() {
+        Button botaoTextoSuperior = findViewById(R.id.buttonMudarTextoSuperior);
+        Button botaoTextoInferior = findViewById(R.id.button);
+
+        androidx.appcompat.widget.TooltipCompat.setTooltipText(botaoTextoSuperior, "Pressione e segure para mover");
+        androidx.appcompat.widget.TooltipCompat.setTooltipText(botaoTextoInferior, "Pressione e segure para mover");
+
+        botaoTextoSuperior.setOnLongClickListener(v -> {
+            modoAtual = MODO_REPOSICIONAR_SUPERIOR;
+            Toast.makeText(this, "Toque na imagem para posicionar o texto de CIMA", Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        botaoTextoInferior.setOnLongClickListener(v -> {
+            modoAtual = MODO_REPOSICIONAR_INFERIOR;
+            Toast.makeText(this, "Toque na imagem para posicionar o texto de BAIXO", Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        imageView.setOnTouchListener((v, event) -> {
+            if (modoAtual == MODO_NORMAL) { return false; }
+
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (modoAtual == MODO_REPOSICIONAR_SUPERIOR) {
+                    memeCreator.setPosicaoTextoSuperior(event.getX(), event.getY());
+                } else if (modoAtual == MODO_REPOSICIONAR_INFERIOR) {
+                    memeCreator.setPosicaoTexto(event.getX(), event.getY());
+                }
+                modoAtual = MODO_NORMAL;
+                mostrarImagem();
+                Toast.makeText(this, "Posição atualizada!", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            return true;
+        });
     }
 
     public void iniciarMudarTexto(View v) {
@@ -120,13 +167,13 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(NovoTextoActivity.EXTRA_ALVO_EDICAO, NovoTextoActivity.ALVO_SUPERIOR);
         startNovoTexto.launch(intent);
     }
-
-    // Questão 3: novo botão de templates.
+    // Questão 3: Método para o botão de templates.
     public void iniciarEscolherTemplate(View v) {
-        // Nomes dos templates que vão aparecer na lista para o usuário.
-        final CharSequence[] nomesDosTemplates = {"Macaco Turn Down for What", "Meme Bebê", "Fry (Original)"};
+        // Nomes dos templates que aparecerão na lista para o usuário.
+        final CharSequence[] nomesDosTemplates = {"Macaco Turn Down For What", "Meme Bebê", "Fry (Original)"};
 
         // Arquivos de imagem correspondentes na pasta 'drawable'.
+        // Garanta que você tem esses arquivos na sua pasta res/drawable!
         final int[] idsDosTemplates = {R.drawable.macaco, R.drawable.meme_bb, R.drawable.fry_meme};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -140,14 +187,11 @@ public class MainActivity extends AppCompatActivity {
             // Atualizo o fundo no nosso criador de meme.
             memeCreator.setFundo(novoFundo);
 
-            // Mostro a imagem atualizada na tela.
             mostrarImagem();
         });
-        builder.show();
+        builder.show(); // Mostra o diálogo na tela.
     }
-
     public String converterCor(int cor) {
-        // ... (método sem alteração)
         switch (cor) {
             case Color.BLACK: return "BLACK";
             case Color.WHITE: return "WHITE";
@@ -160,21 +204,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void iniciarMudarFundo(View v) {
-        // ... (método sem alteração)
         startImagemFundo.launch(new PickVisualMediaRequest.Builder()
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                 .build());
     }
     public void compartilhar(View v) {
-        // ... (método sem alteração)
         compartilharImagem(memeCreator.getImagem());
     }
     public void mostrarImagem() {
-        // ... (método sem alteração)
         imageView.setImageBitmap(memeCreator.getImagem());
     }
     public void compartilharImagem(Bitmap bitmap) {
-        // ... (método sem alteração)
         Uri contentUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             contentUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
